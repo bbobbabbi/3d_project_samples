@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 using UnityEngine;
 
@@ -32,6 +33,7 @@ public class PlayerController : MonoBehaviour
     private float addForce=5;
     private float _groundedMinDistance = 0.1f;
     private float _runSpeed;
+    private bool _isAttacking;
 
     private bool IsGrounded
     {
@@ -94,6 +96,12 @@ public class PlayerController : MonoBehaviour
             _animator.SetTrigger(Jump);
         }
 
+        if (Input.GetButtonDown("Fire1") && !_isAttacking) { 
+            _animator.SetTrigger("Attack");
+
+        }
+       
+        
         /*
         //달리기
         float speed = 0;
@@ -112,7 +120,13 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    private void MeleeAttackStart() {
+        _isAttacking = true;
+    }
 
+    private void MeleeAttackEnd() {
+        _isAttacking = false;
+    }
     //달리기 처리
     private void CheckRun() {
         if (Input.GetKey(KeyCode.LeftShift))
@@ -193,7 +207,7 @@ public class PlayerController : MonoBehaviour
 
         //중력 적용
         _velocity.y += _gravity * Time.deltaTime;
-        movePosition.y = _velocity.y;
+        movePosition.y = _velocity.y * Time.deltaTime;
         _characterController.Move(movePosition);
     }
     #endregion
