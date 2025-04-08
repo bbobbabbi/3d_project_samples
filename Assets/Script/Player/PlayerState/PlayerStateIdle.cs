@@ -13,12 +13,33 @@ public class PlayerStateIdle :  MonoBehaviour , IPlayerState
     }
     public void Updatae()
     {
+        var inputVertical = Input.GetAxis("Vertical");
+        var inputHorizontal = Input.GetAxis("Horizontal");
+        
+        if(inputVertical != 0 || inputHorizontal != 0)
+        {
+            _playerController.Rotate(inputHorizontal, inputVertical);
+            _playerController.SetState(PlayerState.Move);
+            return;
+        }
+        
+        if (Input.GetButtonDown("Jump"))
+        {
+            _playerController.SetState(PlayerState.Jump);
+            return;
+        }
+
+        if(Input.GetButtonDown("Fire1"))
+        {
+            _playerController.SetState(PlayerState.Attack);
+            return;
+        }
 
     }
 
     public void Exit()
     {
-        _playerController.Animator.SetBool(Idle, false);
+        _playerController?.Animator.SetBool(Idle, false);
         _playerController = null;
     }
 

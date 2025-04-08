@@ -13,7 +13,6 @@ public enum PlayerState
     None
 }
 
-
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Animator))]
 public class NewPlayerController : MonoBehaviour
@@ -35,7 +34,7 @@ public class NewPlayerController : MonoBehaviour
 
     public Animator Animator { get; private set; }
     public bool IsGrounded { get { return GetDistanceToGround() < 0.2f; }}
-    public PlayerState CurrentState { get; private set; } = PlayerState.Idle;
+    public PlayerState CurrentState { get; private set; }
     private Dictionary<PlayerState, IPlayerState> _playerStates;
 
 
@@ -53,18 +52,19 @@ public class NewPlayerController : MonoBehaviour
     
     private void Awake()
     {
-        Animator  =  GetComponent<Animator>();
-        _characterController = GetComponent<CharacterController>();
+        Animator = this.GetComponent<Animator>();
+        _characterController = this.GetComponent<CharacterController>();
     }
 
     private void Start()
     {
         _playerStateIdle = new PlayerStateIdle();
-        _playerStateJump = new PlayerStateJump();
         _playerStateMove = new PlayerStateMove();
+        _playerStateJump = new PlayerStateJump();
         _playerStateAttack = new PlayerStateAttack();
         _playerStateHit = new PlayerStateHit();
         _playerStateDead = new PlayerStateDead();
+
         _playerStates = new Dictionary<PlayerState, IPlayerState>
         {
             { PlayerState.Idle, _playerStateIdle },
@@ -85,7 +85,7 @@ public class NewPlayerController : MonoBehaviour
         if (CurrentState != PlayerState.None) { 
             _playerStates[CurrentState].Exit();
         }
-        CurrentState = state;
+        CurrentState = state; 
         _playerStates[CurrentState].Enter(this);
     }
 
@@ -97,7 +97,32 @@ public class NewPlayerController : MonoBehaviour
         }
     }
 
-    #region 에니메이터 관련
+    #region  동작 관련
+
+    public void Rotate(float x, float z) {
+        var cameraTransform = Camera.main.transform;
+        var cameraForward = cameraTransform.forward;
+        var cameraRight = cameraTransform.right;
+
+        // Y  값을 0으로  하여 수직 수평 방향만 고려하게 끔
+        cameraForward.y = 0;
+        cameraRight.y = 0;
+
+        // 입력  방향에  따라 카메라 기준으로 이동 방향 계산
+        var moveDirection = cameraForward * z + cameraRight * x;
+
+        if(moveDirection != Vector3.zero)
+        {
+            // 회전
+            moveDirection.Normalize();
+            transform.rotation = Quaternion.LookRotation(moveDirection);  
+        }
+    }
+
+    public void Jump() { 
+        _velocity.y =  Mathf.Sqrt(jumpSpeed * -2f * _gravity);
+    }
+
     private void OnAnimatorMove()
     {
         if (Animator == null) return;
@@ -134,7 +159,7 @@ public class NewPlayerController : MonoBehaviour
 
     #region 계산관련
     // 바닥과의 거리 계산 메소드
-    private float GetDistanceToGround()
+    public float GetDistanceToGround()
     {
         float maxDistance = 5f;
         if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, maxDistance, groundLayer))
