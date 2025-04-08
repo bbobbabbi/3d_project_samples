@@ -1303,6 +1303,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
+  cameraTransform: {fileID: 1612654355}
 --- !u!1 &1912852762
 GameObject:
   m_ObjectHideFlags: 0

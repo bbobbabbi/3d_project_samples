@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 
 
@@ -13,6 +14,8 @@ public class PlayerController : MonoBehaviour
     private float rotateSpeed = 100f;
     [SerializeField]
     private LayerMask groundLayer;
+    [SerializeField]
+    private Transform cameraTransform;
 
     private const float _gravity = -9.81f;
 
@@ -71,6 +74,7 @@ public class PlayerController : MonoBehaviour
         float vertical = Input.GetAxis("Vertical");
         if (Mathf.Abs(vertical) > 0)
         {
+            RotatePlayerToCameraForward();
             _animator.SetBool(Move, true);
         }
         else { 
@@ -143,8 +147,33 @@ public class PlayerController : MonoBehaviour
         }
     }
    
-    private void RotatePlayerToCameraForward() { 
-    
+    private void RotatePlayerToCameraForward() {
+        Vector3 cameraForward = cameraTransform.forward;
+        cameraForward.y = 0;
+        cameraForward.Normalize();
+
+        // #1
+        /* float targetAngle = Mathf.Atan2(cameraForward.x, cameraForward.z) * Mathf.Rad2Deg;
+        float currentAngle = transform.eulerAngles.y;
+        float angle = Mathf.DeltaAngle(currentAngle, targetAngle);
+        transform.Rotate(0, angle, 0);*/
+
+        // #2
+        /* float dotProduct = Vector3.Dot(transform.forward, cameraTransform.forward);
+         float angle = Mathf.Acos(dotProduct) * Mathf.Rad2Deg;*/
+
+        // #3
+        /* Vector3 crossProduct = Vector3.Cross(transform.forward,cameraTransform.forward);
+         float angle = Mathf.Asin(crossProduct.y) * Mathf.Rad2Deg;        
+         Quaternion targetRotation = Quaternion.Euler(0, angle, 0);
+        */
+        //#4
+        Quaternion targetRotation = Quaternion.LookRotation(cameraForward);
+
+        //부드럽게 회전
+         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+
+
     }
 
     #region Animator Method
